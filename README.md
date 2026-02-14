@@ -85,13 +85,16 @@ List the key features of your project:
 
 #### Screenshots (Add at least 3)
 
-![Screenshot1](Add screenshot 1 here with proper name)
+<img width="1853" height="719" alt="image" src="https://github.com/user-attachments/assets/f7701481-93d0-47ef-9eb6-ea0883ef9fae" />
+
 *Add caption explaining what this shows*
 
-![Screenshot2](Add screenshot 2 here with proper name)
+<img width="1866" height="567" alt="image" src="https://github.com/user-attachments/assets/17190ad8-b3b9-4ab6-8eab-e83c820f482d" />
+
 *Add caption explaining what this shows*
 
-![Screenshot3](Add screenshot 3 here with proper name)
+<img width="1868" height="571" alt="image" src="https://github.com/user-attachments/assets/3d567483-49ed-4918-a8e2-fe226d8956d9" />
+
 *Add caption explaining what this shows*
 
 #### Diagrams
