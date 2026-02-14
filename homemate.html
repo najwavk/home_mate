@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Household Manager</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f4f6f8;
+margin:0;
+}
+
+header{
+background:#4CAF50;
+color:white;
+padding:15px;
+text-align:center;
+}
+
+.container{
+padding:20px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+.card{
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+input,button{
+padding:8px;
+margin:5px 0;
+width:100%;
+}
+
+button{
+background:#4CAF50;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+ul{
+list-style:none;
+padding:0;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🏠 Homemate</h1>
+</header>
+
+<div class="container">
+
+<div class="card">
+<h2>Add Grocery / Crockery</h2>
+<input id="itemName" placeholder="Item Name">
+<input id="itemQty" type="number" placeholder="Quantity">
+<button onclick="addItem()">Add Item</button>
+<ul id="itemList"></ul>
+</div>
+
+<div class="card">
+<h2>Add Bill Reminder</h2>
+<input id="billName" placeholder="Bill Name">
+<input id="billAmount" type="number" placeholder="Amount">
+<input id="billDate" type="date">
+<button onclick="addBill()">Add Bill</button>
+<ul id="billList"></ul>
+</div>
+
+</div>
+
+<script>
+
+let items=[];
+let bills=[];
+
+function addItem(){function addItem(){
+fetch("http://localhost:3000/add-item",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+name:document.getElementById("itemName").value,
+qty:document.getElementById("itemQty").value
+})
+});
+}
+
+let name=document.getElementById("itemName").value;
+let qty=document.getElementById("itemQty").value;
+
+items.push({name,qty});
+renderItems();
+}
+
+function renderItems(){
+let list=document.getElementById("itemList");
+list.innerHTML="";
+items.forEach(item=>{
+let li=document.createElement("li");
+li.textContent=item.name+" - Qty: "+item.qty;
+list.appendChild(li);
+});
+}
+
+function addBill(){function addBill(){
+fetch("http://localhost:3000/add-bill",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+name:document.getElementById("billName").value,
+amount:document.getElementById("billAmount").value,
+dueDate:document.getElementById("billDate").value
+})
+});
+}
+
+let name=document.getElementById("billName").value;
+let amount=document.getElementById("billAmount").value;
+let dueDate=document.getElementById("billDate").value;
+
+let due=new Date(dueDate);
+let reminder=new Date(due);
+reminder.setDate(reminder.getDate()-2);
+
+bills.push({
+name,
+amount,
+dueDate,
+reminderDate: reminder.toISOString().split("T")[0]
+});
+
+renderBills();
+checkReminders();
+}
+
+function renderBills(){
+let list=document.getElementById("billList");
+list.innerHTML="";
+
+bills.forEach(bill=>{
+let li=document.createElement("li");
+li.textContent=
+bill.name+
+" - ₹"+bill.amount+
+" - Due: "+bill.dueDate+
+" - Reminder: "+bill.reminderDate;
+
+list.appendChild(li);
+});
+}
+
+function checkReminders(){
+let today=new Date().toISOString().split("T")[0];
+
+bills.forEach(bill=>{
+if(bill.reminderDate===today){
+alert("Reminder: "+bill.name+" bill is due on "+bill.dueDate);
+}
+});
+}
+
+window.onload=checkReminders;
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Homemate</title>
+
+<style>
+body{font-family:Arial;background:#f4f6f8;margin:0;}
+header{background:#4CAF50;color:white;padding:15px;text-align:center;}
+.container{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.card,.dashboard-card{
+background:white;padding:15px;border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.card{max-width:350px;margin:auto;margin-top:40px;}
+input,button{padding:8px;margin:5px 0;width:100%;}
+button{background:#4CAF50;color:white;border:none;cursor:pointer;}
+ul{list-style:none;padding:0;}
+.hidden{display:none;}
+.logout{max-width:200px;margin:10px auto;}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🏠 Homemate</h1>
+</header>
+
+<div id="loginPage" class="card">
+<h2>Login</h2>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p>No account? <a href="#" onclick="showSignup()">Signup</a></p>
+</div>
+
+<div id="signupPage" class="card hidden">
+<h2>Signup</h2>
+<input id="signupUser" placeholder="Username">
+<input id="signupPass" type="password" placeholder="Password">
+<button onclick="signup()">Create Account</button>
+<p>Already have account? <a href="#" onclick="showLogin()">Login</a></p>
+</div>
+
+<div id="dashboard" class="hidden">
+
+<button class="logout" onclick="logout()">Logout</button>
+
+<div class="container">
+
+<div class="dashboard-card">
+<h2>Add Grocery / Crockery</h2>
+<input id="itemName" placeholder="Item Name">
+<input id="itemQty" type="number" placeholder="Quantity">
+<button onclick="addItem()">Add Item</button>
+<ul id="itemList"></ul>
+</div>
+
+<div class="dashboard-card">
+<h2>Add Bill Reminder</h2>
+<input id="billName" placeholder="Bill Name">
+<input id="billAmount" type="number" placeholder="Amount">
+<input id="billDate" type="date">
+<button onclick="addBill()">Add Bill</button>
+<ul id="billList"></ul>
+</div>
+
+</div>
+</div>
+
+<script>
+
+let currentUser=null;
+let items=[];
+let bills=[];
+
+/* PAGE SWITCH */
+function showSignup(){
+loginPage.classList.add("hidden");
+signupPage.classList.remove("hidden");
+}
+function showLogin(){
+signupPage.classList.add("hidden");
+loginPage.classList.remove("hidden");
+}
+function showDashboard(){
+loginPage.classList.add("hidden");
+signupPage.classList.add("hidden");
+dashboard.classList.remove("hidden");
+}
+
+/* AUTH */
+function signup(){
+let user=signupUser.value;
+let pass=signupPass.value;
+if(!user||!pass){alert("Fill all fields");return;}
+localStorage.setItem("user_"+user,pass);
+alert("Signup Successful");
+showLogin();
+}
+
+function login(){
+let user=loginUser.value;
+let pass=loginPass.value;
+let stored=localStorage.getItem("user_"+user);
+if(stored===pass){
+currentUser=user;
+localStorage.setItem("sessionUser",user);
+loadUserData();
+showDashboard();
+}else{alert("Invalid Login");}
+}
+
+function logout(){
+localStorage.removeItem("sessionUser");
+location.reload();
+}
+
+/* DATA STORAGE */
+function loadUserData(){
+items=JSON.parse(localStorage.getItem(currentUser+"_items"))||[];
+bills=JSON.parse(localStorage.getItem(currentUser+"_bills"))||[];
+renderItems();
+renderBills();
+checkReminders();
+}
+
+function saveData(){
+localStorage.setItem(currentUser+"_items",JSON.stringify(items));
+localStorage.setItem(currentUser+"_bills",JSON.stringify(bills));
+}
+
+/* ITEMS */
+function addItem(){
+let name=itemName.value;
+let qty=itemQty.value;
+if(!name||!qty)return;
+items.push({name,qty});
+saveData();
+renderItems();
+itemName.value="";
+itemQty.value="";
+}
+
+function renderItems(){
+itemList.innerHTML="";
+items.forEach(i=>{
+let li=document.createElement("li");
+li.textContent=i.name+" - Qty: "+i.qty;
+itemList.appendChild(li);
+});
+}
+
+/* BILLS */
+function addBill(){
+let name=billName.value;
+let amount=billAmount.value;
+let dueDate=billDate.value;
+if(!name||!amount||!dueDate)return;
+
+let due=new Date(dueDate);
+let reminder=new Date(due);
+reminder.setDate(reminder.getDate()-2);
+
+bills.push({
+name,amount,dueDate,
+reminderDate:reminder.toISOString().split("T")[0]
+});
+
+saveData();
+renderBills();
+checkReminders();
+
+billName.value="";
+billAmount.value="";
+billDate.value="";
+}
+
+function renderBills(){
+billList.innerHTML="";
+bills.forEach(b=>{
+let li=document.createElement("li");
+li.textContent=
+b.name+" - ₹"+b.amount+
+" - Due: "+b.dueDate+
+" - Reminder: "+b.reminderDate;
+billList.appendChild(li);
+});
+}
+
+function checkReminders(){
+let today=new Date().toISOString().split("T")[0];
+bills.forEach(b=>{
+if(b.reminderDate===today){
+alert("Reminder: "+b.name+" bill is due on "+b.dueDate);
+}
+});
+}
+
+/* AUTO LOGIN */
+window.onload=function(){
+let session=localStorage.getItem("sessionUser");
+if(session){
+currentUser=session;
+loadUserData();
+showDashboard();
+}
+};
+
+</script>
+</body>
+</html>
